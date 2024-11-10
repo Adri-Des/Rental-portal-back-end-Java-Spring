@@ -1,9 +1,6 @@
 package com.openclassrooms.rentalAPI.controllers;
 
 
-
-
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,26 +36,27 @@ public class RegisterController {
 	    
 	    @PostMapping("/api/auth/register")
 	    public ResponseEntity<Map<String, String>> registerUser(@RequestBody RegisterRequest request) {
-	        // Vérification des champs vides
+	    	 // Check if any required field is missing
 	        if (request.getName() == null || request.getEmail() == null || request.getPassword() == null) {
 	            return ResponseEntity.badRequest().body(Map.of("message","All fields are required"));
 	        }
 
-	        // Vérification si l'email existe déjà
+	        // Check if the email already exists in the database
 	        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
 	            return ResponseEntity.badRequest().body(Map.of("message","Email already in use"));
 	        }
 
 	        
-	     // Création du nouvel utilisateur
+	        // Create a new user 
 	        Users newUser = new Users();
 	        newUser.setName(request.getName());
 	        newUser.setEmail(request.getEmail());
-	        newUser.setPassword(passwordEncoder.encode(request.getPassword()));  // Cryptage du mot de passe
+	        newUser.setPassword(passwordEncoder.encode(request.getPassword()));  // Encrypt password
 	        
+	        // Save the new user in the database
 	        userRepository.save(newUser);
 
-	        // Génération du token JWT
+	        // Generate a JWT token for the new user
 	        //Authentication authentication = new UsernamePasswordAuthenticationToken(newUser.getEmail(), null, List.of());
 	        String token = jwtService.generateTokenFromUser(newUser);
 	        

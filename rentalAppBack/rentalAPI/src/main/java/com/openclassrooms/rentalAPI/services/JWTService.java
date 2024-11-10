@@ -24,6 +24,7 @@ public class JWTService {
 		this.jwtEncoder = jwtEncoder;
 	}
 	
+	// Method to generate a JWT token from Authentication object
 	public String generateToken(Authentication authentication) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -36,7 +37,7 @@ public class JWTService {
         return this.jwtEncoder.encode(jwtEncoderParameters).getTokenValue();
     }	
 	
-	
+	 // Method to generate a JWT token directly from a Users object
 	public String generateTokenFromUser(Users user) {
 	    Instant now = Instant.now();
 	    JwtClaimsSet claims = JwtClaimsSet.builder()

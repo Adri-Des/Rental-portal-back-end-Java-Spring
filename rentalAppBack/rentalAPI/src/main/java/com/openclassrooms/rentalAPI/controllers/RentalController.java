@@ -43,26 +43,26 @@ public class RentalController {
 	    private UserRepository userRepository;
 
 	  
-
+	    // Route to create a rental
 	    @PostMapping("/api/rentals")
 	    public ResponseEntity<Map<String, String>> createRental(@ModelAttribute RentalRequest rentalRequest, Authentication authentication) throws IOException {
-	        // Vérification si l'utilisateur est authentifié
+	    	 // Check if user is authenticated
 	        if (authentication == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","Unauthorized"));
 	        }
 
-	        // Récupérer l'utilisateur connecté
+	        // Retrieve the authenticated user
 	        String email = authentication.getName();
 	        Users owner = userRepository.findByEmail(email).orElse(null);
 	        if (owner == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","User not found"));
 	        }
 
-	        // Enregistrer l'image sur le serveur
+	        // Save image to server
 	        MultipartFile picture = rentalRequest.getPicture();
 	        String imagePath = saveImage(picture);
 
-	        // Créer une nouvelle offre de location
+	        // Create a new rental
 	        Rentals rental = new Rentals();
 	        rental.setName(rentalRequest.getName());
 	        rental.setSurface(rentalRequest.getSurface());
@@ -71,7 +71,7 @@ public class RentalController {
 	        rental.setDescription(rentalRequest.getDescription());
 	        rental.setOwner(owner); // Passer l'objet owner
 
-	        // Sauvegarder l'offre de location
+	        // Save the rental to the database
 	        rentalRepository.save(rental);
 	        
 	        Map<String, String> response = new HashMap<>();
@@ -80,44 +80,44 @@ public class RentalController {
 	        return ResponseEntity.ok(response);
 	    }
 	    
-	 // Méthode pour enregistrer l'image et retourner le chemin
+	    // Method to save an image and return the path
 	    public String saveImage(MultipartFile picture) throws IOException {
-	        // Vérifier si l'image est vide
+	    	// Check if image is empty
 	        if (picture.isEmpty()) {
 	            throw new IOException("Failed to store empty file.");
 	        }
 
-	        // Obtenir le nom du fichier
+	        // Get the file name
 	        String imageFileName = picture.getOriginalFilename();
 
-	        // Chemin absolu pour sauvegarder l'image dans src/main/resources/images
+	        // Retrieve path to save the image in the 'uploads' directory
 	        String imagesDirectory = new File("uploads").getAbsolutePath();
 	        File imageFile = new File(imagesDirectory, imageFileName);
 
-	        // Créer le dossier s'il n'existe pas
+	        // Create the directory if it doesn’t exist
 	        if (!imageFile.getParentFile().exists()) {
 	            imageFile.getParentFile().mkdirs();
 	        }
 
-	        // Sauvegarder l'image dans le dossier
+	        // Save the image to the directory
 	        picture.transferTo(imageFile);
 
-	        // Retourner le chemin relatif de l'image
+	        // Return the relative path to the image
 	        return  imageFileName;
 	    }
 	    
 	    
-	    
+	    // Route to retrieve all rentals
 	    @GetMapping("/api/rentals")
 	    public ResponseEntity<Object> getAllRentals(Authentication authentication) {
 	        if (authentication == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 	        }
 
-	        // Récupérer toutes les locations dans la base de données
+	        // Retrieve all rentals from the database
 	        List<Rentals> rentals = rentalRepository.findAll();
 
-	        // Formater les dates pour chaque location
+	        // Format the dates for each rental
 	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 	        List<RentalResponse> rentalResponses = rentals.stream().map(rental -> {
 	            String createdAt = rental.getCreatedAt().format(formatter);
@@ -132,7 +132,7 @@ public class RentalController {
 	                    //rental.getPicture(),
 	                    "http://localhost:8080/images/" + rental.getPicture(),
 	                    rental.getDescription(),
-	                    rental.getOwner().getId(), // Récupérer l'ID du propriétaire
+	                    rental.getOwner().getId(), 
 	                    createdAt, 
 	                    updatedAt  
 	                    
@@ -143,7 +143,7 @@ public class RentalController {
 	        
 	        
 
-	        // Créer un objet de réponse avec la clé "rentals"
+	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("rentals", rentalResponses);
 
@@ -154,18 +154,18 @@ public class RentalController {
 	    }
 	    
 	    
-	    // Route pour afficher une location par son ID
+	    // Route to retrieve a rental by its ID
 	    @GetMapping("/api/rentals/{id}")
 	    public ResponseEntity<RentalResponse> getRentalById(@PathVariable Integer id, Authentication authentication) {
 	        if (authentication == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 	        }
 
-	        // Récupérer la location par son ID
+	        // Retrieve the rental by its ID
 	        return rentalRepository.findById(id)
 	                .map(rental -> {
 	                	
-	                	 // Formater les dates
+	                	// Format dates
 	                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 	                    String createdAt = rental.getCreatedAt().format(formatter);
 	                    String updatedAt = rental.getUpdatedAt().format(formatter);
@@ -178,7 +178,7 @@ public class RentalController {
 	                            //rental.getPicture(),
 	                            "http://localhost:8080/images/" + rental.getPicture(),
 	                            rental.getDescription(),
-	                            rental.getOwner().getId(), // Récupérer l'ID du propriétaire
+	                            rental.getOwner().getId(), 
 	                            createdAt, 
 	                            updatedAt 
 	                        );
@@ -189,14 +189,14 @@ public class RentalController {
 	    
 	    
 	    
-	    
+	    // Route to update an existing rental
 	    @PutMapping("/api/rentals/{id}")
 	    public ResponseEntity<Map<String, String>> updateRental(@PathVariable Integer id, @ModelAttribute RentalRequest rentalRequest, Authentication authentication) throws Exception {
 	        if (authentication == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","Unauthorized"));
 	        }
 
-	     // Récupérer l'utilisateur authentifié (Owner)
+	        // Retrieve the authenticated user (Owner)
 	        Optional<Users> Owner = userRepository.findByEmail(authentication.getName());
 	        if (Owner.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message","User not found"));
@@ -204,7 +204,7 @@ public class RentalController {
 
 	        Users owner = Owner.get(); // Extraire l'utilisateur authentifié
 
-	        // Récupérer l'offre de location existante
+	        // Retrieve existing rental by ID
 	        Optional<Rentals> Rental = rentalRepository.findById(id);
 	        if (Rental.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message","Rental not found"));
@@ -212,25 +212,25 @@ public class RentalController {
 
 	        Rentals rental = Rental.get();
 
-	        // Vérifier si l'utilisateur est bien le propriétaire de l'offre
+	        // Check if the authenticated user is the owner
 	        if (!rental.getOwner().getId().equals(owner.getId())) {
 	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message","You are not the owner of this rental"));
 	        }
 
-	        // Mettre à jour les informations de l'offre
+	        // Update rental details
 	        rental.setName(rentalRequest.getName());
 	        rental.setSurface(rentalRequest.getSurface());
 	        rental.setPrice(rentalRequest.getPrice());
 	        rental.setDescription(rentalRequest.getDescription());
 
-	        // Si une nouvelle image est fournie, la sauvegarder et remplacer l'ancienne
+	        // Save new image if provided and replace old image path
 	        MultipartFile picture = rentalRequest.getPicture();
 	        if (picture != null && !picture.isEmpty()) {
 	            String imagePath = saveImage(picture); // Sauvegarder la nouvelle image
 	            rental.setPicture(imagePath); // Mettre à jour le chemin de l'image
 	        }
 
-	        // Enregistrer les modifications dans la base de données
+	        // Save changes to the database
 	        rentalRepository.save(rental);
 
 	        Map<String, String> response = new HashMap<>();

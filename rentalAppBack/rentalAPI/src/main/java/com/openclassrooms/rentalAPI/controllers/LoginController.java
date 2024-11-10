@@ -39,29 +39,30 @@ public class LoginController {
 
 	@PostMapping("/api/auth/login")
 	public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest) {
-	    // Récupération de l'utilisateur via l'Optional
+		// Retrieve the user by email
 	    Optional<Users> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
-	    // Vérification si l'utilisateur existe dans la base de données
+	    // Check if user exists in the database
 	    if (userOptional.isEmpty()) {
 	        return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
 	        
 	    }
 
-	    // Extraction de l'utilisateur de l'Optional
+	    // Extract the user 
 	    Users user = userOptional.get();
 
-	    // Vérification du mot de passe
+	    // Verify the password against the hashed password in the database
 	    if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
 	        return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
 	    }
 
-	 // Créer une instance d'Authentication avec les détails de l'utilisateur
+	    // Create an Authentication instance with user details
 	    Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, List.of());
 	    
-	    // Générer le token en utilisant l'instance d'Authentication
+	    // Generate a JWT token using the Authentication instance
 	    String token = jwtService.generateToken(authentication);
 	    
+	    // Build a response containing the JWT token
 	    Map<String, String> response = new HashMap<>();
 	    response.put("token", token);
 

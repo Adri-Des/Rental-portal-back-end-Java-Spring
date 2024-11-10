@@ -38,21 +38,21 @@ public class MessageController {
         @RequestBody MessageRequest messageRequest, 
         Authentication authentication) {
 
-        // Vérification si un message ou un rentalId est vide
+    	// Check if rentalId, userId, or message content is missing
         if (messageRequest.getRentalId() == null || messageRequest.getUserId() == null || messageRequest.getMessage() == null) {
             return ResponseEntity.badRequest().body(Map.of("message","Bad Request: rental_id, user_id or message is empty"));
         }
 
-        // Récupérer l'utilisateur actuellement connecté
+        // Retrieve the currently authenticated user
         String userEmail = authentication.getName();
         Users currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // Récupérer l'offre de location
+        // Retrieve the rental offer specified in the message request
         Rentals rental = rentalRepository.findById(messageRequest.getRentalId())
                 .orElseThrow(() -> new EntityNotFoundException("Rental not found"));
 
-        // Créer et enregistrer le message
+        // Create and save a new message with the current user's details and rental information in the database
         Messages newMessage = new Messages();
         newMessage.setRental(rental);
         newMessage.setUser(currentUser);

@@ -16,18 +16,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ImageController {
-    // Route pour afficher l'image
-    @GetMapping("/images/{filename:.+}") // Le regex permet d'accepter les caractères spéciaux
+	// Route to display an image
+    @GetMapping("/images/{filename:.+}") // Allows handling special characters in the filename
     public ResponseEntity<Resource> getImage(@PathVariable String filename) throws IOException {
-        // Utilisez le chemin complet en fonction de la structure de votre projet
+    	 // Path of the image
         Path imagePath = Paths.get("uploads/" + filename);
         Resource resource = new UrlResource(imagePath.toUri());
 
+        // Check if the resource exists and is readable; if not, return a 404 NOT FOUND response
         if (!resource.exists() || !resource.isReadable()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        // Déterminez le type de contenu en fonction de l'extension du fichier
+        // Set the content type based on the file extension
         MediaType mediaType = MediaType.IMAGE_JPEG; // Valeur par défaut
         if (filename.endsWith(".png")) {
             mediaType = MediaType.IMAGE_PNG;
