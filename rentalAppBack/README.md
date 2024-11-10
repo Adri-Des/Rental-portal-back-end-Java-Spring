@@ -12,3 +12,6 @@ Launch API:
 
     mvn spring-boot:run
 
+Routes Documentation:
+    http://localhost:8080/swagger-ui/index.html
+
