@@ -1,10 +1,10 @@
-Start the project
+# Start the project
 
 Go inside folder:
 
     cd rentalAPI
 
-Configure the Database :
+## Configure the Database :
 
 Update src/main/resources/application.properties to match your database setup:
 
@@ -13,14 +13,14 @@ Update src/main/resources/application.properties to match your database setup:
     spring.datasource.password=your_password
     spring.jpa.hibernate.ddl-auto=update
 
-Install dependencies:
+## Install dependencies:
 
     mvn clean install
 
-Launch API:
+## Launch API:
 
     mvn spring-boot:run
 
-Routes Documentation:
+## Routes Documentation:
     http://localhost:8080/swagger-ui/index.html
 
