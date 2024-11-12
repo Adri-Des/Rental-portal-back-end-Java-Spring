@@ -67,9 +67,9 @@ public class RentalController {
 	        rental.setName(rentalRequest.getName());
 	        rental.setSurface(rentalRequest.getSurface());
 	        rental.setPrice(rentalRequest.getPrice());
-	        rental.setPicture(imagePath); // Enregistrer le chemin de l'image
+	        rental.setPicture(imagePath); 
 	        rental.setDescription(rentalRequest.getDescription());
-	        rental.setOwner(owner); // Passer l'objet owner
+	        rental.setOwner(owner); 
 
 	        // Save the rental to the database
 	        rentalRepository.save(rental);
