@@ -1,67 +1,32 @@
 package com.openclassrooms.rentalAPI.controllers;
 
-import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.openclassrooms.rentalAPI.models.MessageRequest;
-import com.openclassrooms.rentalAPI.models.Messages;
-import com.openclassrooms.rentalAPI.models.Rentals;
-import com.openclassrooms.rentalAPI.models.Users;
-import com.openclassrooms.rentalAPI.repository.MessageRepository;
-import com.openclassrooms.rentalAPI.repository.RentalRepository;
-import com.openclassrooms.rentalAPI.repository.UserRepository;
+import com.openclassrooms.rentalAPI.services.MessageService;
 
-import jakarta.persistence.EntityNotFoundException;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 public class MessageController {
 
     @Autowired
-    private MessageRepository messageRepository;
+    private MessageService messageService;
 
-    @Autowired
-    private RentalRepository rentalRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
+    // Route to send a message
+    @Operation(summary = "Send a message", description = "This route allows you to send a message to the rental owner")
     @PostMapping("/api/messages")
     public ResponseEntity<Map<String, String>> sendMessage(
         @RequestBody MessageRequest messageRequest, 
         Authentication authentication) {
 
-    	// Check if rentalId, userId, or message content is missing
-        if (messageRequest.getRentalId() == null || messageRequest.getUserId() == null || messageRequest.getMessage() == null) {
-            return ResponseEntity.badRequest().body(Map.of("message","Bad Request: rental_id, user_id or message is empty"));
-        }
-
-        // Retrieve the currently authenticated user
         String userEmail = authentication.getName();
-        Users currentUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        // Retrieve the rental offer specified in the message request
-        Rentals rental = rentalRepository.findById(messageRequest.getRentalId())
-                .orElseThrow(() -> new EntityNotFoundException("Rental not found"));
-
-        // Create and save a new message with the current user's details and rental information in the database
-        Messages newMessage = new Messages();
-        newMessage.setRental(rental);
-        newMessage.setUser(currentUser);
-        newMessage.setMessage(messageRequest.getMessage());
-        messageRepository.save(newMessage);
-        
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Message send with success");
-
-        return ResponseEntity.ok(response);
+        return messageService.sendMessage(messageRequest, userEmail);
     }
 }

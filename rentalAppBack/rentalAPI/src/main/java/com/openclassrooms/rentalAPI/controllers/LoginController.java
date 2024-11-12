@@ -18,18 +18,17 @@ import com.openclassrooms.rentalAPI.models.LoginRequest;
 import com.openclassrooms.rentalAPI.models.Users;
 import com.openclassrooms.rentalAPI.repository.UserRepository;
 import com.openclassrooms.rentalAPI.services.JWTService;
+import com.openclassrooms.rentalAPI.services.LoginService;
+
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 public class LoginController {
 
-	@Autowired
-	private UserRepository userRepository;
+	
 
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
-
-	@Autowired
-	private JWTService jwtService;
+    private LoginService loginService;
 	    
 	    
 
@@ -37,37 +36,19 @@ public class LoginController {
 		this.jwtService = jwtService;
 	}*/
 
+	
+	@Operation(summary = "Login page", description = "This route allows an existing user to connect")
 	@PostMapping("/api/auth/login")
-	public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest) {
-		// Retrieve the user by email
-	    Optional<Users> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest) {
+        Map<String, String> response = loginService.login(loginRequest);
 
-	    // Check if user exists in the database
-	    if (userOptional.isEmpty()) {
-	        return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
-	        
-	    }
+        
+        if (response.containsKey("error")) {
+            return ResponseEntity.status(401).body(response);
+        }
 
-	    // Extract the user 
-	    Users user = userOptional.get();
-
-	    // Verify the password against the hashed password in the database
-	    if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-	        return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
-	    }
-
-	    // Create an Authentication instance with user details
-	    Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, List.of());
-	    
-	    // Generate a JWT token using the Authentication instance
-	    String token = jwtService.generateToken(authentication);
-	    
-	    // Build a response containing the JWT token
-	    Map<String, String> response = new HashMap<>();
-	    response.put("token", token);
-
-	    return ResponseEntity.ok(response);
-	}
+        return ResponseEntity.ok(response);
+    }
 
 
 }

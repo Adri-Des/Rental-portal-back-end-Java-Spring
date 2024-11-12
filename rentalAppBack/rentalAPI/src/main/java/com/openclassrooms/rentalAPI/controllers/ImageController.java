@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 public class ImageController {
 	// Route to display an image
+	@Operation(summary = "Display an image for a rental", description = "This route retrieves the path of an image to be associated with a location")
     @GetMapping("/images/{filename:.+}") // Allows handling special characters in the filename
     public ResponseEntity<Resource> getImage(@PathVariable String filename) throws IOException {
     	 // Path of the image
